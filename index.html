@@ -1,1412 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vital Pulse - Health & Fitness Tracker</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        health: {
-                            bg: '#0f172a',
-                            card: '#1e293b',
-                            border: '#334155',
-                            accent: '#10b981',
-                            accentHover: '#059669',
-                            blue: '#3b82f6',
-                            purple: '#8b5cf6'
-                        },
-                        matrix: {
-                            bg: '#08090c',
-                            card: '#12151c',
-                            border: '#1f2430',
-                            green: '#00ff66',
-                            cyan: '#00f0ff',
-                            pink: '#ff0055'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['Fira Code', 'Courier New', 'monospace']
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared Cloud Drive & Gallery</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --accent-color: #3b82f6;
+      --accent-hover: #2563eb;
+      --danger-color: #ef4444;
+      --success-color: #22c55e;
+      --border-color: #334155;
+    }
 
-        .scanlines {
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%),
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-            background-size: 100% 4px, 6px 100%;
-            pointer-events: none;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-        .glow-green { box-shadow: 0 0 20px rgba(0, 255, 102, 0.25); }
-        .glow-cyan { box-shadow: 0 0 20px rgba(0, 240, 255, 0.25); }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-        canvas { touch-action: none; }
-    </style>
+    header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .btn {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+    }
+    .btn-danger:hover {
+      background-color: #dc2626;
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+    }
+    .btn-success:hover {
+      background-color: #16a34a;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+    .btn-outline:hover {
+      background-color: var(--border-color);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .upload-section {
+      background-color: var(--card-bg);
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      transition: border-color 0.2s;
+    }
+
+    .upload-section:hover {
+      border-color: var(--accent-color);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .upload-label {
+      cursor: pointer;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .upload-icon {
+      font-size: 2.5rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background-color: #000;
+    }
+
+    .card-body {
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      word-break: break-all;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .card-actions .btn {
+      flex: 1;
+      font-size: 0.8rem;
+      padding: 0.4rem;
+    }
+
+    .empty-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: #64748b;
+      padding: 2rem;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border-color);
+    }
+
+    .modal h2 {
+      margin-bottom: 1rem;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-color);
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .admin-panel {
+      border: 2px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      background-color: rgba(59, 130, 246, 0.05);
+      display: none;
+    }
+
+    .admin-panel.active {
+      display: block;
+    }
+
+    .badge {
+      background-color: var(--accent-color);
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: #64748b;
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+    }
+  </style>
 </head>
-<body class="bg-health-bg text-gray-100 min-h-screen flex flex-col justify-between font-sans antialiased selection:bg-health-accent selection:text-black">
+<body>
 
-    <!-- Subtle background matrix overlay (Hidden on Health, toggled in Matrix) -->
-    <div id="matrixScanlines" class="scanlines fixed inset-0 z-50 pointer-events-none hidden"></div>
-
-    <!-- ================= PUBLIC FACADE: VITAL PULSE HEALTH APP ================= -->
-    <div id="healthApp" class="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        
-        <!-- Health Header -->
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-health-border">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-health-accent to-health-blue flex items-center justify-center text-white text-2xl shadow-lg">
-                    <i class="fa-solid fa-heart-pulse animate-pulse"></i>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
-                        Vital Pulse <span class="text-xs px-2.5 py-0.5 rounded-full bg-health-accent/20 text-health-accent border border-health-accent/30 font-medium">v2.4 Live</span>
-                    </h1>
-                    <p class="text-xs text-gray-400">Personal Health & Biometric Performance Monitor</p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-4 bg-health-card px-4 py-2 rounded-xl border border-health-border text-xs text-gray-300">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>Sync Status: <strong class="text-white">Active</strong></span>
-                </div>
-                <div class="border-l border-health-border pl-4">
-                    Today: <strong class="text-white" id="currentDateStr">Nov 5, 2026</strong>
-                </div>
-            </div>
-        </header>
-
-        <!-- Metrics Overview Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Steps Card -->
-            <div class="bg-health-card border border-health-border p-5 rounded-2xl shadow-md space-y-3">
-                <div class="flex justify-between items-center text-gray-400 text-xs font-semibold">
-                    <span>DAILY STEPS</span>
-                    <i class="fa-solid fa-person-walking text-health-accent text-lg"></i>
-                </div>
-                <div class="flex items-baseline justify-between">
-                    <span class="text-3xl font-extrabold text-white" id="stepCountText">8,420</span>
-                    <span class="text-xs text-health-accent font-medium">+1,200 vs yesterday</span>
-                </div>
-                <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-                    <div id="stepProgressBar" class="bg-health-accent h-full transition-all duration-500" style="width: 84%"></div>
-                </div>
-                <div class="flex justify-between items-center text-[11px] text-gray-400">
-                    <span>Goal: 10,000 steps</span>
-                    <button onclick="addSteps(500)" class="text-health-accent hover:underline font-semibold">+ Add 500</button>
-                </div>
-            </div>
-
-            <!-- Heart Rate Card -->
-            <div class="bg-health-card border border-health-border p-5 rounded-2xl shadow-md space-y-3">
-                <div class="flex justify-between items-center text-gray-400 text-xs font-semibold">
-                    <span>HEART RATE</span>
-                    <i class="fa-solid fa-wave-square text-rose-500 text-lg"></i>
-                </div>
-                <div class="flex items-baseline justify-between">
-                    <span class="text-3xl font-extrabold text-white"><span id="bpmValue">72</span> <span class="text-sm font-normal text-gray-400">BPM</span></span>
-                    <span class="text-xs text-emerald-400 font-medium">Resting Normal</span>
-                </div>
-                <div class="h-8 w-full flex items-center justify-center">
-                    <canvas id="heartRateCanvas" class="w-full h-full"></canvas>
-                </div>
-                <div class="text-[11px] text-gray-400 flex justify-between">
-                    <span>Min: 58 BPM</span>
-                    <span>Max: 134 BPM</span>
-                </div>
-            </div>
-
-            <!-- Water Tracker -->
-            <div class="bg-health-card border border-health-border p-5 rounded-2xl shadow-md space-y-3">
-                <div class="flex justify-between items-center text-gray-400 text-xs font-semibold">
-                    <span>HYDRATION</span>
-                    <i class="fa-solid fa-glass-water text-health-blue text-lg"></i>
-                </div>
-                <div class="flex items-baseline justify-between">
-                    <span class="text-3xl font-extrabold text-white"><span id="waterGlasses">6</span><span class="text-sm text-gray-400 font-normal"> / 8 Cups</span></span>
-                    <span class="text-xs text-health-blue font-medium">75% Goal</span>
-                </div>
-                <div class="flex gap-1.5 pt-1" id="waterGlassesContainer">
-                    <!-- Dynamic glasses rendered in JS -->
-                </div>
-                <div class="flex justify-between items-center text-[11px] text-gray-400">
-                    <span>Target: 2.0 Liters</span>
-                    <button onclick="logWaterGlass()" class="text-health-blue hover:underline font-semibold">+ Log Glass</button>
-                </div>
-            </div>
-
-            <!-- Calories Card -->
-            <div class="bg-health-card border border-health-border p-5 rounded-2xl shadow-md space-y-3">
-                <div class="flex justify-between items-center text-gray-400 text-xs font-semibold">
-                    <span>ACTIVE CALORIES</span>
-                    <i class="fa-solid fa-fire text-amber-500 text-lg"></i>
-                </div>
-                <div class="flex items-baseline justify-between">
-                    <span class="text-3xl font-extrabold text-white">640 <span class="text-sm font-normal text-gray-400">kcal</span></span>
-                    <span class="text-xs text-amber-400 font-medium">Burned</span>
-                </div>
-                <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-                    <div class="bg-amber-500 h-full" style="width: 72%"></div>
-                </div>
-                <div class="text-[11px] text-gray-400 flex justify-between">
-                    <span>Target: 850 kcal</span>
-                    <span>Remaining: 210</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Weekly Activity Chart -->
-            <div class="lg:col-span-2 bg-health-card border border-health-border p-6 rounded-2xl shadow-md space-y-4">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="text-lg font-bold text-white">Weekly Fitness Activity</h3>
-                        <p class="text-xs text-gray-400">Step count telemetry over the last 7 days</p>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs font-medium">
-                        <span class="flex items-center gap-1 text-health-accent"><span class="w-2.5 h-2.5 rounded-full bg-health-accent"></span> Steps</span>
-                        <span class="flex items-center gap-1 text-health-blue"><span class="w-2.5 h-2.5 rounded-full bg-health-blue"></span> Active Mins</span>
-                    </div>
-                </div>
-                <div class="h-64 w-full">
-                    <canvas id="weeklyActivityCanvas" class="w-full h-full"></canvas>
-                </div>
-            </div>
-
-            <!-- Daily Workout Log -->
-            <div class="bg-health-card border border-health-border p-6 rounded-2xl shadow-md space-y-4 flex flex-col justify-between">
-                <div>
-                    <h3 class="text-lg font-bold text-white mb-1">Today's Workout Log</h3>
-                    <p class="text-xs text-gray-400 mb-4">Completed physical activities</p>
-
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                                    <i class="fa-solid fa-person-running"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white">Morning Jog</h4>
-                                    <p class="text-[11px] text-gray-400">35 mins • Outdoor</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-mono font-bold text-emerald-400">320 kcal</span>
-                        </div>
-
-                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                                    <i class="fa-solid fa-dumbbell"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white">Strength Circuit</h4>
-                                    <p class="text-[11px] text-gray-400">45 mins • Upper Body</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-mono font-bold text-blue-400">280 kcal</span>
-                        </div>
-
-                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
-                                    <i class="fa-solid fa-mattress-pillow"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white">Evening Stretch</h4>
-                                    <p class="text-[11px] text-gray-400">15 mins • Yoga</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-mono font-bold text-purple-400">40 kcal</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-4 border-t border-slate-700/50 flex justify-between items-center text-xs">
-                    <span class="text-gray-400">Total Duration: <strong class="text-white">95 mins</strong></span>
-                    <button class="px-3 py-1.5 bg-health-accent hover:bg-health-accentHover text-slate-950 font-bold rounded-lg transition">
-                        + Log Activity
-                    </button>
-                </div>
-            </div>
-        </div>
-
+  <header>
+    <h1>📸 Shared Drive</h1>
+    <div>
+      <button class="btn btn-outline" id="ownerBtn" onclick="openLoginModal()">🔑 Owner Access</button>
+      <button class="btn btn-danger" id="logoutBtn" style="display: none;" onclick="logout()">Lock Admin</button>
     </div>
+  </header>
 
-    <!-- ================= STEALTH TRIGGER BUTTON (BOTTOM-LEFT) ================= -->
-    <button id="stealthTriggerBtn" onclick="openPasscodeModal()" title="System Portal" class="fixed bottom-4 left-4 px-3 py-2 text-xs bg-slate-800/80 hover:bg-slate-700 text-gray-400 hover:text-white border border-slate-700 rounded-xl transition-all z-40 flex items-center gap-2 shadow-xl backdrop-blur-sm group">
-        <i class="fa-solid fa-shield-halved text-health-accent group-hover:rotate-12 transition-transform"></i>
-        <span class="font-medium">Member Portal</span>
-    </button>
+  <main>
+    <!-- Public Upload Section -->
+    <section class="upload-section">
+      <label class="upload-label" for="photoInput">
+        <span class="upload-icon">📁</span>
+        <strong>Click to upload photos</strong>
+        <span style="font-size: 0.85rem; color: #94a3b8;">Photos will be submitted for owner authorization before appearing in the public gallery.</span>
+      </label>
+      <input type="file" id="photoInput" class="file-input" accept="image/*" multiple onchange="handleFileUpload(event)">
+    </section>
 
-    <!-- ================= PASSCODE SECURITY MODAL ================= -->
-    <div id="passcodeOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden justify-center items-center z-50 p-4 transition-opacity">
-        <div class="bg-slate-900 border border-slate-700 p-6 sm:p-8 rounded-2xl w-full max-w-sm shadow-2xl relative text-center space-y-5">
-            <button onclick="closePasscodeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+    <!-- Admin Panel (Only visible to owner when authorized with code 1243) -->
+    <section class="admin-panel" id="adminPanel">
+      <div class="section-title">
+        <h2>🛡️ Owner Approval Panel</h2>
+        <span class="badge" id="pendingCount">0 Pending</span>
+      </div>
+      <div class="grid" id="pendingGrid"></div>
+    </section>
 
-            <div class="w-14 h-14 rounded-2xl bg-health-accent/10 border border-health-accent/20 text-health-accent flex items-center justify-center mx-auto text-2xl shadow-inner">
-                <i class="fa-solid fa-lock"></i>
-            </div>
+    <!-- Public Library Section -->
+    <section>
+      <div class="section-title">
+        <h2>🌐 Public Library</h2>
+        <span style="font-size: 0.85rem; color: #94a3b8;" id="publicCount">0 Approved Photos</span>
+      </div>
+      <div class="grid" id="publicGrid"></div>
+    </section>
+  </main>
 
-            <div>
-                <h3 class="text-xl font-bold text-white">Restricted Access</h3>
-                <p class="text-xs text-gray-400 mt-1">Enter key passkey to access secure portal</p>
-            </div>
-
-            <form onsubmit="verifyPasscode(event)" class="space-y-4">
-                <div class="relative">
-                    <input type="password" id="passcodeInput" maxlength="10" placeholder="Enter Passcode" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-center text-white tracking-widest text-lg font-mono focus:outline-none focus:border-health-accent transition">
-                </div>
-
-                <!-- Error Alert Box -->
-                <div id="passcodeError" class="hidden text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg font-medium">
-                    Access Denied: Invalid Security Key
-                </div>
-
-                <button type="submit" class="w-full py-3 bg-health-accent hover:bg-health-accentHover text-slate-950 font-bold rounded-xl transition shadow-lg flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-key"></i> Authorize Access
-                </button>
-            </form>
-        </div>
+  <!-- Login Modal -->
+  <div class="modal-backdrop" id="loginModal">
+    <div class="modal">
+      <h2>Owner Authorization</h2>
+      <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1rem;">Enter your special password to authorize pending uploads.</p>
+      <input type="password" id="passcodeInput" placeholder="Enter Access Code..." onkeydown="if(event.key==='Enter') verifyCode()">
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeLoginModal()">Cancel</button>
+        <button class="btn" onclick="verifyCode()">Unlock</button>
+      </div>
     </div>
+  </div>
 
-    <!-- ================= UNLOCKED SECRET DASHBOARD: MATRIX VAULT ================= -->
-    <div id="matrixVault" class="hidden min-h-screen p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6 z-20">
-        
-        <!-- Matrix Vault Header -->
-        <header class="flex flex-col md:flex-row justify-between items-center gap-4 pb-6 border-b border-matrix-border">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl bg-matrix-green/10 border border-matrix-green/30 text-matrix-green flex items-center justify-center text-2xl shadow-lg glow-green">
-                    <i class="fa-solid fa-terminal"></i>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-matrix-green via-matrix-cyan to-matrix-pink font-mono">
-                        MATRIX VAULT // ARCADE & MEDIA STREAM
-                    </h2>
-                    <p class="text-xs text-gray-400 font-mono">Stealth Sandbox Environment • Status: <span class="text-matrix-green">UNLOCKED (0001)</span></p>
-                </div>
-            </div>
+  <footer>
+    <p>Shared Drive & Public Gallery &bull; GitHub Pages Ready</p>
+  </footer>
 
-            <div class="flex items-center gap-3">
-                <button onclick="openGuideModal()" class="px-3.5 py-2 bg-matrix-card border border-matrix-border hover:border-matrix-cyan text-matrix-cyan rounded-xl text-xs font-mono transition flex items-center gap-2">
-                    <i class="fa-solid fa-book text-sm"></i> Local Setup Guide
-                </button>
-                <button onclick="toggleAudio()" id="audioToggleBtn" class="px-3.5 py-2 bg-matrix-card border border-matrix-border hover:border-matrix-green text-gray-300 rounded-xl text-xs font-mono transition flex items-center gap-2">
-                    <i class="fa-solid fa-volume-high text-matrix-green"></i> Audio: <span id="audioStatusText">ON</span>
-                </button>
-                <button onclick="lockVault()" class="px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 font-bold rounded-xl text-xs font-mono transition flex items-center gap-2 shadow-lg">
-                    <i class="fa-solid fa-power-off"></i> Lock Vault
-                </button>
-            </div>
-        </header>
+  <script>
+    // Storage keys
+    const PUBLIC_KEY = 'shared_drive_public_photos';
+    const PENDING_KEY = 'shared_drive_pending_photos';
+    const PASSCODE = '1243';
 
-        <!-- ================= EMBEDDED YOUTUBE MEDIA SANDBOX ================= -->
-        <section class="bg-matrix-card border border-matrix-border rounded-2xl p-5 shadow-2xl space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-3 border-b border-matrix-border/60">
-                <div class="flex items-center gap-2">
-                    <i class="fa-brands fa-youtube text-rose-500 text-xl"></i>
-                    <h3 class="text-base font-bold text-white font-mono">Matrix Stream // Embedded YouTube Sandbox</h3>
-                </div>
-                <span class="text-[11px] text-gray-400 font-mono">Paste YouTube Link or Video ID below</span>
-            </div>
+    let isOwner = false;
 
-            <!-- URL Input Form -->
-            <div class="flex flex-col sm:flex-row gap-3">
-                <div class="relative flex-grow">
-                    <i class="fa-solid fa-link absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
-                    <input type="text" id="ytUrlInput" placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or dQw4w9WgXcQ" class="w-full pl-10 pr-4 py-2.5 bg-black border border-matrix-border rounded-xl text-white text-xs font-mono placeholder-gray-600 focus:outline-none focus:border-matrix-cyan transition">
-                </div>
-                <button onclick="loadYouTubeVideo()" class="px-6 py-2.5 bg-matrix-cyan hover:bg-cyan-400 text-black font-extrabold rounded-xl text-xs font-mono transition shadow-lg flex items-center justify-center gap-2 glow-cyan">
-                    <i class="fa-solid fa-play"></i> Load Stream
-                </button>
-            </div>
+    // Load photos from localStorage on startup
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPhotos();
+    });
 
-            <!-- Responsive Video Frame Wrapper -->
-            <div class="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-matrix-border shadow-inner flex items-center justify-center group">
-                <iframe id="ytIframe" class="w-full h-full border-0" src="https://www.youtube-nocookie.com/embed/jfKfPfyJRdk" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
-        </section>
+    // Handle photo file selection
+    function handleFileUpload(event) {
+      const files = event.target.files;
+      if (!files.length) return;
 
-        <!-- Category Filters & Arcade Section -->
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-matrix-card p-4 rounded-2xl border border-matrix-border">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-gamepad text-matrix-green text-lg"></i>
-                <h3 class="text-base font-bold text-white font-mono">Arcade Vault Matrix</h3>
-            </div>
+      const pendingPhotos = getPhotos(PENDING_KEY);
 
-            <div class="flex flex-wrap gap-2" id="categoryFilters">
-                <button onclick="setCategory('All')" class="category-btn active px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-matrix-green text-black transition">All</button>
-                <button onclick="setCategory('Action')" class="category-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-black text-gray-400 border border-matrix-border hover:text-white transition">Action</button>
-                <button onclick="setCategory('Retro')" class="category-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-black text-gray-400 border border-matrix-border hover:text-white transition">Retro</button>
-                <button onclick="setCategory('Puzzle')" class="category-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-black text-gray-400 border border-matrix-border hover:text-white transition">Puzzle</button>
-            </div>
-        </div>
-
-        <!-- Arcade Games Grid -->
-        <div id="gamesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamic game cards -->
-        </div>
-
-        <!-- Interactive Game Viewport Sandbox Stage -->
-        <div id="stageContainer" class="hidden bg-matrix-card border border-matrix-border rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4">
-            
-            <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-matrix-border">
-                <div class="flex items-center gap-3">
-                    <button onclick="closeStage()" class="px-3 py-1.5 bg-black hover:bg-gray-800 text-gray-300 rounded-lg text-xs font-mono border border-matrix-border transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-arrow-left"></i> Close Game
-                    </button>
-                    <h3 id="stageTitle" class="text-lg font-bold text-white font-mono flex items-center gap-2">
-                        Game Title
-                    </h3>
-                </div>
-
-                <div class="flex items-center gap-6 text-xs font-mono bg-black px-4 py-2 rounded-xl border border-matrix-border">
-                    <div>SCORE: <span id="currentScore" class="text-matrix-cyan font-bold text-sm">0</span></div>
-                    <div>HIGH: <span id="highScore" class="text-matrix-green font-bold text-sm">0</span></div>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <button onclick="pauseResumeGame()" id="pauseBtn" class="p-2.5 bg-black hover:bg-gray-800 text-gray-300 border border-matrix-border rounded-lg text-xs transition" title="Pause/Resume">
-                        <i class="fa-solid fa-pause"></i>
-                    </button>
-                    <button onclick="restartCurrentGame()" class="p-2.5 bg-black hover:bg-gray-800 text-gray-300 border border-matrix-border rounded-lg text-xs transition" title="Restart">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Canvas Viewport Frame -->
-            <div id="canvasWrapper" class="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-matrix-border flex items-center justify-center">
-                <canvas id="gameCanvas" class="max-w-full max-h-full"></canvas>
-
-                <!-- Pause Overlay -->
-                <div id="pauseOverlay" class="absolute inset-0 bg-black/85 backdrop-blur-sm hidden flex-col items-center justify-center gap-4 z-20">
-                    <div class="text-3xl font-extrabold text-white tracking-widest font-mono">PAUSED</div>
-                    <button onclick="pauseResumeGame()" class="px-6 py-2 bg-matrix-cyan text-black rounded-lg font-mono font-bold text-xs shadow-lg glow-cyan">
-                        Resume Game
-                    </button>
-                </div>
-
-                <!-- Game Over Overlay -->
-                <div id="gameOverOverlay" class="absolute inset-0 bg-black/90 backdrop-blur-md hidden flex-col items-center justify-center gap-4 z-20">
-                    <div class="text-3xl font-extrabold text-rose-500 tracking-wider font-mono">GAME OVER</div>
-                    <p class="text-gray-300 text-xs font-mono">Final Score: <span id="finalScore" class="text-matrix-cyan font-bold">0</span></p>
-                    <button onclick="restartCurrentGame()" class="px-6 py-2.5 bg-matrix-green text-black rounded-lg font-mono font-bold text-xs transition shadow-lg glow-green flex items-center gap-2">
-                        <i class="fa-solid fa-play"></i> Play Again
-                    </button>
-                </div>
-            </div>
-
-            <!-- Mobile Touch Controls Bar -->
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4 pt-2">
-                <div id="gameInstructions" class="text-xs text-gray-400 font-mono bg-black/60 p-3 rounded-xl border border-matrix-border w-full md:w-auto">
-                    <i class="fa-solid fa-circle-info text-matrix-cyan mr-1"></i> <span id="instructionsText">Controls guide will appear here.</span>
-                </div>
-
-                <div id="touchControls" class="flex items-center gap-2 w-full md:w-auto justify-center">
-                    <button id="touchLeft" class="touch-btn w-12 h-11 bg-black active:bg-matrix-cyan border border-matrix-border rounded-xl flex items-center justify-center text-white">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </button>
-                    <div class="flex flex-col gap-1">
-                        <button id="touchUp" class="touch-btn w-12 h-9 bg-black active:bg-matrix-cyan border border-matrix-border rounded-xl flex items-center justify-center text-white">
-                            <i class="fa-solid fa-arrow-up"></i>
-                        </button>
-                        <button id="touchDown" class="touch-btn w-12 h-9 bg-black active:bg-matrix-cyan border border-matrix-border rounded-xl flex items-center justify-center text-white">
-                            <i class="fa-solid fa-arrow-down"></i>
-                        </button>
-                    </div>
-                    <button id="touchRight" class="touch-btn w-12 h-11 bg-black active:bg-matrix-cyan border border-matrix-border rounded-xl flex items-center justify-center text-white">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                    <button id="touchAction" class="touch-btn px-4 h-11 bg-matrix-green active:bg-emerald-400 text-black font-extrabold font-mono rounded-xl flex items-center justify-center ml-2 text-xs">
-                        ACTION
-                    </button>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ================= SETUP & EMBEDDING GUIDE MODAL ================= -->
-    <div id="guideOverlay" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden justify-center items-center z-50 p-4 transition-opacity">
-        <div class="bg-matrix-card border border-matrix-border p-6 sm:p-8 rounded-2xl w-full max-w-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto font-mono text-xs">
-            <button onclick="closeGuideModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-matrix-cyan/20 text-matrix-cyan flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-laptop-code"></i>
-                </div>
-                <div>
-                    <h3 class="text-base font-bold text-white">Local Setup & YouTube Embedding Guide</h3>
-                    <p class="text-[11px] text-gray-400">Offline file deployment & media integration</p>
-                </div>
-            </div>
-
-            <div class="space-y-5 text-gray-300 leading-relaxed">
-                <div class="bg-black p-4 rounded-xl border border-matrix-border space-y-2">
-                    <h4 class="font-bold text-matrix-green text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-download"></i> 1. How to Save and Run on Laptop
-                    </h4>
-                    <p class="text-gray-400">
-                        • Save this code into a single file named <code class="text-matrix-cyan bg-slate-900 px-1 rounded">index.html</code>.<br>
-                        • Double-click <code class="text-matrix-cyan bg-slate-900 px-1 rounded">index.html</code> to open it directly in Chrome, Firefox, Safari, or Edge.<br>
-                        • Works 100% offline without requiring any server setup or local host installation!
-                    </p>
-                </div>
-
-                <div class="bg-black p-4 rounded-xl border border-matrix-border space-y-2">
-                    <h4 class="font-bold text-matrix-cyan text-sm flex items-center gap-2">
-                        <i class="fa-brands fa-youtube text-rose-500"></i> 2. How YouTube Embedding Works
-                    </h4>
-                    <p class="text-gray-400">
-                        • In the <strong>Matrix Stream</strong> box, paste any valid YouTube link (e.g. <code class="text-gray-300">https://www.youtube.com/watch?v=VIDEO_ID</code>) or just the 11-character Video ID.<br>
-                        • The system automatically converts standard URLs into YouTube privacy-enhanced embed format (<code class="text-gray-300">youtube-nocookie.com/embed/VIDEO_ID</code>).
-                    </p>
-                </div>
-
-                <div class="bg-black p-4 rounded-xl border border-matrix-border space-y-2">
-                    <h4 class="font-bold text-matrix-pink text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-code"></i> 3. Security Access Summary
-                    </h4>
-                    <p class="text-gray-400">
-                        • Health App Facade: Fully functional public view.<br>
-                        • Stealth Passcode: Click <strong>Member Portal</strong> (bottom-left) and type <code class="text-matrix-green font-bold">0001</code> to unlock the Vault.
-                    </p>
-                </div>
-            </div>
-
-            <div class="mt-6 pt-4 border-t border-matrix-border flex justify-end">
-                <button onclick="closeGuideModal()" class="px-5 py-2 bg-matrix-green hover:bg-emerald-400 text-black rounded-xl font-bold transition">
-                    Close Guide
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="py-4 text-center text-xs text-gray-500 border-t border-slate-800/60 z-10 font-sans">
-        <p>Vital Pulse Health Engine &copy; 2026. All rights reserved.</p>
-    </footer>
-
-    <!-- ================= JAVASCRIPT LOGIC ================= -->
-    <script>
-        /* ----------------------------------------------------
-           1. APP STATE & SOUND SYNTHESIZER
-        ---------------------------------------------------- */
-        const STATE = {
-            unlocked: false,
-            currentCategory: 'All',
-            currentGameId: null,
-            audioEnabled: true,
-            isPaused: false,
-            isGameOver: false,
-            score: 0,
-            highScores: JSON.parse(localStorage.getItem('matrix_highscores') || '{}'),
-            waterCount: 6,
-            stepCount: 8420
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const photoObj = {
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            name: file.name,
+            src: e.target.result,
+            date: new Date().toLocaleDateString()
+          };
+          pendingPhotos.push(photoObj);
+          savePhotos(PENDING_KEY, pendingPhotos);
+          renderPhotos();
         };
-
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioCtx();
-        }
-
-        function playSound(type) {
-            if (!STATE.audioEnabled) return;
-            try {
-                initAudio();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                const now = audioCtx.currentTime;
-
-                if (type === 'score') {
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
-                    gain.gain.setValueAtTime(0.08, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now);
-                    osc.stop(now + 0.1);
-                } else if (type === 'hit') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(150, now);
-                    osc.frequency.linearRampToValueAtTime(40, now + 0.15);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
-                } else if (type === 'shoot') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(700, now);
-                    osc.frequency.exponentialRampToValueAtTime(120, now + 0.08);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
-                    osc.start(now);
-                    osc.stop(now + 0.08);
-                } else if (type === 'gameover') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(250, now);
-                    osc.frequency.linearRampToValueAtTime(60, now + 0.35);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
-                    osc.start(now);
-                    osc.stop(now + 0.35);
-                }
-            } catch (e) {}
-        }
-
-        function toggleAudio() {
-            STATE.audioEnabled = !STATE.audioEnabled;
-            document.getElementById('audioStatusText').innerText = STATE.audioEnabled ? 'ON' : 'OFF';
-        }
-
-        /* ----------------------------------------------------
-           2. HEALTH FACADE INTERACTIVE LOGIC
-        ---------------------------------------------------- */
-        function renderWaterGlasses() {
-            const container = document.getElementById('waterGlassesContainer');
-            container.innerHTML = '';
-            for (let i = 0; i < 8; i++) {
-                const cup = document.createElement('i');
-                cup.className = `fa-solid fa-glass-water text-base transition-colors ${i < STATE.waterCount ? 'text-health-blue' : 'text-slate-700'}`;
-                container.appendChild(cup);
-            }
-            document.getElementById('waterGlasses').innerText = STATE.waterCount;
-        }
-
-        function logWaterGlass() {
-            if (STATE.waterCount < 8) {
-                STATE.waterCount++;
-                renderWaterGlasses();
-            }
-        }
-
-        function addSteps(amount) {
-            STATE.stepCount += amount;
-            document.getElementById('stepCountText').innerText = STATE.stepCount.toLocaleString();
-            const pct = Math.min(100, Math.round((STATE.stepCount / 10000) * 100));
-            document.getElementById('stepProgressBar').style.width = pct + '%';
-        }
-
-        // Draw Health Heart Rate & Activity Telemetry Charts
-        function initHealthCharts() {
-            // Heart Rate ECG Wave Simulation
-            const hrCanvas = document.getElementById('heartRateCanvas');
-            const hrCtx = hrCanvas.getContext('2d');
-            hrCanvas.width = 250;
-            hrCanvas.height = 40;
-            let offset = 0;
-
-            function animateECG() {
-                hrCtx.clearRect(0, 0, 250, 40);
-                hrCtx.strokeStyle = '#f43f5e';
-                hrCtx.lineWidth = 2;
-                hrCtx.beginPath();
-
-                for (let x = 0; x < 250; x++) {
-                    const pos = (x + offset) % 100;
-                    let y = 20;
-                    if (pos > 40 && pos < 45) y = 5;
-                    else if (pos >= 45 && pos < 55) y = 35;
-                    else if (pos >= 55 && pos < 60) y = 10;
-                    if (x === 0) hrCtx.moveTo(x, y);
-                    else hrCtx.lineTo(x, y);
-                }
-                hrCtx.stroke();
-                offset = (offset + 2) % 100;
-
-                // Subtle BPM fluctuation
-                if (Math.random() < 0.05) {
-                    const bpm = 70 + Math.floor(Math.random() * 5);
-                    document.getElementById('bpmValue').innerText = bpm;
-                }
-
-                requestAnimationFrame(animateECG);
-            }
-            animateECG();
-
-            // Weekly Activity Bar Chart
-            const wCanvas = document.getElementById('weeklyActivityCanvas');
-            const wCtx = wCanvas.getContext('2d');
-            wCanvas.width = 600;
-            wCanvas.height = 240;
-
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const stepData = [7200, 9400, 6800, 8420, 10200, 11500, 8900];
-            const maxVal = 12000;
-
-            wCtx.clearRect(0, 0, 600, 240);
-            const barW = 35;
-            const gap = 45;
-            const startX = 40;
-
-            for (let i = 0; i < 7; i++) {
-                const x = startX + i * (barW + gap);
-                const h = (stepData[i] / maxVal) * 160;
-                const y = 200 - h;
-
-                // Bar Shadow / Background
-                wCtx.fillStyle = '#334155';
-                wCtx.fillRect(x, 40, barW, 160);
-
-                // Steps Bar Gradient
-                const grad = wCtx.createLinearGradient(0, y, 0, 200);
-                grad.addColorStop(0, '#10b981');
-                grad.addColorStop(1, '#3b82f6');
-                wCtx.fillStyle = grad;
-                wCtx.fillRect(x, y, barW, h);
-
-                // Day Labels
-                wCtx.fillStyle = '#94a3b8';
-                wCtx.font = '12px Inter, sans-serif';
-                wCtx.fillText(days[i], x + 5, 222);
-            }
-        }
-
-        /* ----------------------------------------------------
-           3. AUTHENTICATION & STEALTH PASSCODE LOGIC (STRICT "0001")
-        ---------------------------------------------------- */
-        function openPasscodeModal() {
-            document.getElementById('passcodeOverlay').classList.remove('hidden');
-            document.getElementById('passcodeOverlay').classList.add('flex');
-            document.getElementById('passcodeInput').value = '';
-            document.getElementById('passcodeError').classList.add('hidden');
-            document.getElementById('passcodeInput').focus();
-        }
-
-        function closePasscodeModal() {
-            document.getElementById('passcodeOverlay').classList.add('hidden');
-            document.getElementById('passcodeOverlay').classList.remove('flex');
-        }
-
-        function verifyPasscode(e) {
-            e.preventDefault();
-            const val = document.getElementById('passcodeInput').value.trim();
-
-            if (val === '0001') {
-                unlockMatrixVault();
-            } else {
-                document.getElementById('passcodeError').classList.remove('hidden');
-                document.getElementById('passcodeInput').value = '';
-                document.getElementById('passcodeInput').focus();
-            }
-        }
-
-        function unlockMatrixVault() {
-            STATE.unlocked = true;
-            closePasscodeModal();
-
-            // Switch UI views
-            document.getElementById('healthApp').classList.add('hidden');
-            document.getElementById('stealthTriggerBtn').classList.add('hidden');
-            document.getElementById('matrixScanlines').classList.remove('hidden');
-            document.getElementById('matrixVault').classList.remove('hidden');
-
-            renderGameGrid();
-        }
-
-        function lockVault() {
-            STATE.unlocked = false;
-            closeStage();
-
-            document.getElementById('matrixVault').classList.add('hidden');
-            document.getElementById('matrixScanlines').classList.add('hidden');
-            document.getElementById('healthApp').classList.remove('hidden');
-            document.getElementById('stealthTriggerBtn').classList.remove('hidden');
-        }
-
-        function openGuideModal() {
-            document.getElementById('guideOverlay').classList.remove('hidden');
-            document.getElementById('guideOverlay').classList.add('flex');
-        }
-
-        function closeGuideModal() {
-            document.getElementById('guideOverlay').classList.add('hidden');
-            document.getElementById('guideOverlay').classList.remove('flex');
-        }
-
-        /* ----------------------------------------------------
-           4. YOUTUBE EMBED PLAYER LOGIC
-        ---------------------------------------------------- */
-        function loadYouTubeVideo() {
-            const input = document.getElementById('ytUrlInput').value.trim();
-            if (!input) return;
-
-            let videoId = input;
-
-            // Extract ID from full YouTube URL patterns
-            const match = input.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-            if (match && match[1]) {
-                videoId = match[1];
-            }
-
-            const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
-            document.getElementById('ytIframe').src = embedUrl;
-        }
-
-        /* ----------------------------------------------------
-           5. ARCADE GAME DATABASE & STAGE ENGINE
-        ---------------------------------------------------- */
-        const GAMES = [
-            {
-                id: 'spaceinvaders',
-                title: 'Space Invaders Matrix',
-                category: 'Action',
-                description: 'Defend earth from invading alien fleets in classic arcade format.',
-                instructions: 'LEFT / RIGHT Arrow keys to move cannon, SPACE to fire lasers.',
-                icon: 'fa-user-ninja'
-            },
-            {
-                id: 'asteroids',
-                title: 'Asteroids Vector',
-                category: 'Action',
-                description: 'Space vector shooter. Thrust, rotate, blast asteroids, and survive.',
-                instructions: 'LEFT/RIGHT to rotate, UP to thrust, SPACE to shoot.',
-                icon: 'fa-meteor'
-            },
-            {
-                id: 'snake',
-                title: 'Retro Grid Snake',
-                category: 'Retro',
-                description: 'Classic 8-bit grid snake. Consume energy pills and grow.',
-                instructions: 'Use ARROW KEYS or Touch D-Pad to steer snake direction.',
-                icon: 'fa-staff-snake'
-            },
-            {
-                id: 'flappy',
-                title: 'Clumsy Bird Engine',
-                category: 'Action',
-                description: 'Navigate through dynamic cyber barrier pipes with jump mechanics.',
-                instructions: 'Press SPACE, UP Arrow or Tap ACTION button to flap wings.',
-                icon: 'fa-crow'
-            },
-            {
-                id: 'stacker',
-                title: 'Tower Stacker',
-                category: 'Puzzle',
-                description: 'Precision timing stack builder. Place moving blocks aligned perfectly.',
-                instructions: 'Press SPACE or Tap ACTION to drop moving block slice.',
-                icon: 'fa-cubes'
-            },
-            {
-                id: 'pong',
-                title: 'Cyber Paddle Pong',
-                category: 'Retro',
-                description: 'Table tennis simulation vs AI paddle with dynamic deflection angles.',
-                instructions: 'UP / DOWN Arrow keys or Touch Up/Down buttons to steer paddle.',
-                icon: 'fa-table-tennis-paddle-ball'
-            }
-        ];
-
-        function setCategory(cat) {
-            STATE.currentCategory = cat;
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                if (btn.innerText === cat) {
-                    btn.className = 'category-btn active px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-matrix-green text-black transition';
-                } else {
-                    btn.className = 'category-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-black text-gray-400 border border-matrix-border hover:text-white transition';
-                }
-            });
-            renderGameGrid();
-        }
-
-        function renderGameGrid() {
-            const grid = document.getElementById('gamesGrid');
-            grid.innerHTML = '';
-
-            const filtered = GAMES.filter(g => STATE.currentCategory === 'All' || g.category === STATE.currentCategory);
-
-            filtered.forEach(game => {
-                const highScore = STATE.highScores[game.id] || 0;
-                const card = document.createElement('div');
-                card.className = 'bg-matrix-card border border-matrix-border hover:border-matrix-cyan rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 font-mono shadow-lg';
-                card.innerHTML = `
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-matrix-cyan/10 border border-matrix-cyan/30 text-matrix-cyan flex items-center justify-center text-lg">
-                                <i class="fa-solid ${game.icon}"></i>
-                            </div>
-                            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-black text-gray-400 border border-matrix-border">
-                                ${game.category}
-                            </span>
-                        </div>
-                        <h4 class="text-base font-bold text-white">${game.title}</h4>
-                        <p class="text-xs text-gray-400 mt-2 leading-relaxed">${game.description}</p>
-                    </div>
-
-                    <div class="mt-6 pt-3 border-t border-matrix-border/60 flex items-center justify-between">
-                        <div class="text-xs text-gray-400">
-                            BEST: <span class="text-matrix-green font-bold">${highScore}</span>
-                        </div>
-                        <button onclick="launchGame('${game.id}')" class="px-3.5 py-1.5 bg-black hover:bg-matrix-cyan hover:text-black text-white border border-matrix-border text-xs font-bold rounded-lg transition flex items-center gap-1.5">
-                            Launch <i class="fa-solid fa-play text-[10px]"></i>
-                        </button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        /* ----------------------------------------------------
-           6. MINI-GAME EXECUTION ENGINE & CANVAS GAMES
-        ---------------------------------------------------- */
-        let activeLoopId = null;
-        let currentGameInstance = null;
-        let canvas, ctx;
-
-        function launchGame(gameId) {
-            const gameData = GAMES.find(g => g.id === gameId);
-            if (!gameData) return;
-
-            STATE.currentGameId = gameId;
-            STATE.score = 0;
-            STATE.isPaused = false;
-            STATE.isGameOver = false;
-
-            document.getElementById('stageTitle').innerHTML = `<i class="fa-solid ${gameData.icon} text-matrix-cyan"></i> ${gameData.title}`;
-            document.getElementById('instructionsText').innerText = gameData.instructions;
-            document.getElementById('currentScore').innerText = '0';
-            document.getElementById('highScore').innerText = STATE.highScores[gameId] || 0;
-
-            document.getElementById('pauseOverlay').classList.add('hidden');
-            document.getElementById('pauseOverlay').classList.remove('flex');
-            document.getElementById('gameOverOverlay').classList.add('hidden');
-            document.getElementById('gameOverOverlay').classList.remove('flex');
-
-            const stage = document.getElementById('stageContainer');
-            stage.classList.remove('hidden');
-            stage.scrollIntoView({ behavior: 'smooth' });
-
-            canvas = document.getElementById('gameCanvas');
-            ctx = canvas.getContext('2d');
-            canvas.width = 800;
-            canvas.height = 450;
-
-            if (activeLoopId) cancelAnimationFrame(activeLoopId);
-
-            switch (gameId) {
-                case 'spaceinvaders': currentGameInstance = new SpaceInvadersGame(); break;
-                case 'asteroids': currentGameInstance = new AsteroidsGame(); break;
-                case 'snake': currentGameInstance = new SnakeGame(); break;
-                case 'flappy': currentGameInstance = new FlappyGame(); break;
-                case 'stacker': currentGameInstance = new StackerGame(); break;
-                case 'pong': currentGameInstance = new PongGame(); break;
-            }
-
-            let lastTime = performance.now();
-            function loop(now) {
-                const dt = (now - lastTime) / 1000;
-                lastTime = now;
-
-                if (!STATE.isPaused && !STATE.isGameOver && currentGameInstance) {
-                    currentGameInstance.update(dt);
-                    currentGameInstance.draw(ctx);
-                }
-
-                activeLoopId = requestAnimationFrame(loop);
-            }
-            activeLoopId = requestAnimationFrame(loop);
-        }
-
-        function updateScore(points) {
-            STATE.score += points;
-            document.getElementById('currentScore').innerText = STATE.score;
-            const currentHigh = STATE.highScores[STATE.currentGameId] || 0;
-            if (STATE.score > currentHigh) {
-                STATE.highScores[STATE.currentGameId] = STATE.score;
-                localStorage.setItem('matrix_highscores', JSON.stringify(STATE.highScores));
-                document.getElementById('highScore').innerText = STATE.score;
-            }
-        }
-
-        function triggerGameOver() {
-            STATE.isGameOver = true;
-            playSound('gameover');
-            document.getElementById('finalScore').innerText = STATE.score;
-            document.getElementById('gameOverOverlay').classList.remove('hidden');
-            document.getElementById('gameOverOverlay').classList.add('flex');
-            renderGameGrid();
-        }
-
-        function pauseResumeGame() {
-            if (STATE.isGameOver) return;
-            STATE.isPaused = !STATE.isPaused;
-            const overlay = document.getElementById('pauseOverlay');
-            if (STATE.isPaused) {
-                overlay.classList.remove('hidden');
-                overlay.classList.add('flex');
-            } else {
-                overlay.classList.add('hidden');
-                overlay.classList.remove('flex');
-            }
-        }
-
-        function restartCurrentGame() {
-            if (STATE.currentGameId) launchGame(STATE.currentGameId);
-        }
-
-        function closeStage() {
-            if (activeLoopId) cancelAnimationFrame(activeLoopId);
-            activeLoopId = null;
-            currentGameInstance = null;
-            document.getElementById('stageContainer').classList.add('hidden');
-        }
-
-        // Input listeners
-        const KEYS = {};
-        window.addEventListener('keydown', e => {
-            KEYS[e.code] = true;
-            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code) && currentGameInstance) {
-                e.preventDefault();
-            }
-            if (currentGameInstance && currentGameInstance.onKeyDown) currentGameInstance.onKeyDown(e.code);
-        });
-
-        window.addEventListener('keyup', e => {
-            KEYS[e.code] = false;
-        });
-
-        const bindTouch = (id, keyName) => {
-            const btn = document.getElementById(id);
-            if (!btn) return;
-            const startHandler = (e) => {
-                e.preventDefault();
-                KEYS[keyName] = true;
-                if (currentGameInstance && currentGameInstance.onKeyDown) currentGameInstance.onKeyDown(keyName);
-            };
-            const endHandler = (e) => {
-                e.preventDefault();
-                KEYS[keyName] = false;
-            };
-            btn.addEventListener('touchstart', startHandler);
-            btn.addEventListener('touchend', endHandler);
-            btn.addEventListener('mousedown', startHandler);
-            btn.addEventListener('mouseup', endHandler);
-        };
-
-        bindTouch('touchLeft', 'ArrowLeft');
-        bindTouch('touchRight', 'ArrowRight');
-        bindTouch('touchUp', 'ArrowUp');
-        bindTouch('touchDown', 'ArrowDown');
-        bindTouch('touchAction', 'Space');
-
-        /* --- CANVAS MINI-GAMES --- */
-        class SpaceInvadersGame {
-            constructor() {
-                this.player = { x: 380, y: 400, w: 40, h: 20, speed: 320 };
-                this.bullets = [];
-                this.aliens = [];
-                this.alienDir = 1;
-                this.alienSpeed = 40;
-                this.initAliens();
-            }
-
-            initAliens() {
-                this.aliens = [];
-                for (let r = 0; r < 4; r++) {
-                    for (let c = 0; c < 8; c++) {
-                        this.aliens.push({ x: 100 + c * 65, y: 50 + r * 40, w: 35, h: 25, alive: true });
-                    }
-                }
-            }
-
-            onKeyDown(code) {
-                if (code === 'Space' && this.bullets.length < 3) {
-                    this.bullets.push({ x: this.player.x + 18, y: this.player.y, speed: 500 });
-                    playSound('shoot');
-                }
-            }
-
-            update(dt) {
-                if (KEYS['ArrowLeft']) this.player.x = Math.max(10, this.player.x - this.player.speed * dt);
-                if (KEYS['ArrowRight']) this.player.x = Math.min(750, this.player.x + this.player.speed * dt);
-
-                for (let i = this.bullets.length - 1; i >= 0; i--) {
-                    const b = this.bullets[i];
-                    b.y -= b.speed * dt;
-                    if (b.y < 0) { this.bullets.splice(i, 1); continue; }
-
-                    for (let a of this.aliens) {
-                        if (a.alive && b.x >= a.x && b.x <= a.x + a.w && b.y >= a.y && b.y <= a.y + a.h) {
-                            a.alive = false;
-                            this.bullets.splice(i, 1);
-                            updateScore(20);
-                            playSound('hit');
-                            break;
-                        }
-                    }
-                }
-
-                let shiftDown = false;
-                let activeAliens = this.aliens.filter(a => a.alive);
-                if (activeAliens.length === 0) { this.alienSpeed += 20; this.initAliens(); return; }
-
-                activeAliens.forEach(a => {
-                    a.x += this.alienSpeed * this.alienDir * dt;
-                    if (a.x > 740 || a.x < 20) shiftDown = true;
-                    if (a.y + a.h >= this.player.y) triggerGameOver();
-                });
-
-                if (shiftDown) {
-                    this.alienDir *= -1;
-                    activeAliens.forEach(a => a.y += 15);
-                }
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = '#08090c';
-                ctx.fillRect(0, 0, 800, 450);
-
-                ctx.fillStyle = '#00ff66';
-                ctx.fillRect(this.player.x, this.player.y, this.player.w, this.player.h);
-
-                ctx.fillStyle = '#00f0ff';
-                this.bullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 10));
-
-                this.aliens.forEach(a => {
-                    if (a.alive) {
-                        ctx.fillStyle = '#ff0055';
-                        ctx.fillRect(a.x, a.y, a.w, a.h);
-                    }
-                });
-            }
-        }
-
-        class AsteroidsGame {
-            constructor() {
-                this.ship = { x: 400, y: 225, r: 12, angle: 0, vel: { x: 0, y: 0 } };
-                this.asteroids = [];
-                this.lasers = [];
-                for (let i = 0; i < 5; i++) this.spawnAsteroid();
-            }
-
-            spawnAsteroid(x, y, r = 35) {
-                this.asteroids.push({
-                    x: x || Math.random() * 800,
-                    y: y || Math.random() * 450,
-                    r: r,
-                    vel: { x: (Math.random() - 0.5) * 120, y: (Math.random() - 0.5) * 120 }
-                });
-            }
-
-            onKeyDown(code) {
-                if (code === 'Space') {
-                    this.lasers.push({
-                        x: this.ship.x + Math.cos(this.ship.angle) * 15,
-                        y: this.ship.y + Math.sin(this.ship.angle) * 15,
-                        vel: { x: Math.cos(this.ship.angle) * 450, y: Math.sin(this.ship.angle) * 450 },
-                        life: 1.2
-                    });
-                    playSound('shoot');
-                }
-            }
-
-            update(dt) {
-                if (KEYS['ArrowLeft']) this.ship.angle -= 4 * dt;
-                if (KEYS['ArrowRight']) this.ship.angle += 4 * dt;
-                if (KEYS['ArrowUp']) {
-                    this.ship.vel.x += Math.cos(this.ship.angle) * 250 * dt;
-                    this.ship.vel.y += Math.sin(this.ship.angle) * 250 * dt;
-                }
-
-                this.ship.x = (this.ship.x + this.ship.vel.x * dt + 800) % 800;
-                this.ship.y = (this.ship.y + this.ship.vel.y * dt + 450) % 450;
-
-                for (let i = this.lasers.length - 1; i >= 0; i--) {
-                    const l = this.lasers[i];
-                    l.x = (l.x + l.vel.x * dt + 800) % 800;
-                    l.y = (l.y + l.vel.y * dt + 450) % 450;
-                    l.life -= dt;
-                    if (l.life <= 0) this.lasers.splice(i, 1);
-                }
-
-                for (let aIdx = this.asteroids.length - 1; aIdx >= 0; aIdx--) {
-                    const a = this.asteroids[aIdx];
-                    a.x = (a.x + a.vel.x * dt + 800) % 800;
-                    a.y = (a.y + a.vel.y * dt + 450) % 450;
-
-                    for (let lIdx = this.lasers.length - 1; lIdx >= 0; lIdx--) {
-                        const l = this.lasers[lIdx];
-                        if (Math.hypot(a.x - l.x, a.y - l.y) < a.r) {
-                            this.lasers.splice(lIdx, 1);
-                            if (a.r > 18) {
-                                this.spawnAsteroid(a.x, a.y, a.r / 2);
-                                this.spawnAsteroid(a.x, a.y, a.r / 2);
-                            }
-                            this.asteroids.splice(aIdx, 1);
-                            updateScore(20);
-                            playSound('hit');
-                            break;
-                        }
-                    }
-
-                    if (Math.hypot(a.x - this.ship.x, a.y - this.ship.y) < a.r + this.ship.r) {
-                        triggerGameOver();
-                    }
-                }
-
-                if (this.asteroids.length === 0) for (let i = 0; i < 5; i++) this.spawnAsteroid();
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = '#08090c';
-                ctx.fillRect(0, 0, 800, 450);
-
-                ctx.save();
-                ctx.translate(this.ship.x, this.ship.y);
-                ctx.rotate(this.ship.angle);
-                ctx.strokeStyle = '#00f0ff';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(15, 0); ctx.lineTo(-12, -10); ctx.lineTo(-12, 10);
-                ctx.closePath();
-                ctx.stroke();
-                ctx.restore();
-
-                ctx.fillStyle = '#ff0055';
-                this.lasers.forEach(l => { ctx.beginPath(); ctx.arc(l.x, l.y, 3, 0, Math.PI * 2); ctx.fill(); });
-
-                ctx.strokeStyle = '#00ff66';
-                this.asteroids.forEach(a => { ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); ctx.stroke(); });
-            }
-        }
-
-        class SnakeGame {
-            constructor() {
-                this.grid = 20;
-                this.snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }];
-                this.dir = { x: 1, y: 0 };
-                this.food = { x: 18, y: 10 };
-                this.moveTimer = 0;
-            }
-
-            onKeyDown(code) {
-                if (code === 'ArrowLeft' && this.dir.x === 0) this.dir = { x: -1, y: 0 };
-                if (code === 'ArrowRight' && this.dir.x === 0) this.dir = { x: 1, y: 0 };
-                if (code === 'ArrowUp' && this.dir.y === 0) this.dir = { x: 0, y: -1 };
-                if (code === 'ArrowDown' && this.dir.y === 0) this.dir = { x: 0, y: 1 };
-            }
-
-            update(dt) {
-                this.moveTimer += dt;
-                if (this.moveTimer < 0.1) return;
-                this.moveTimer = 0;
-
-                const head = { x: this.snake[0].x + this.dir.x, y: this.snake[0].y + this.dir.y };
-                if (head.x < 0 || head.x >= 40 || head.y < 0 || head.y >= 22.5) { triggerGameOver(); return; }
-
-                for (let part of this.snake) {
-                    if (part.x === head.x && part.y === head.y) { triggerGameOver(); return; }
-                }
-
-                this.snake.unshift(head);
-                if (head.x === this.food.x && head.y === this.food.y) {
-                    updateScore(15);
-                    playSound('score');
-                    this.food = { x: Math.floor(Math.random() * 38) + 1, y: Math.floor(Math.random() * 20) + 1 };
-                } else {
-                    this.snake.pop();
-                }
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = '#08090c';
-                ctx.fillRect(0, 0, 800, 450);
-
-                ctx.fillStyle = '#ff0055';
-                ctx.fillRect(this.food.x * this.grid, this.food.y * this.grid, 18, 18);
-
-                this.snake.forEach((p, i) => {
-                    ctx.fillStyle = i === 0 ? '#00ff66' : '#00f0ff';
-                    ctx.fillRect(p.x * this.grid, p.y * this.grid, 18, 18);
-                });
-            }
-        }
-
-        class FlappyGame {
-            constructor() {
-                this.birdY = 200;
-                this.velocity = 0;
-                this.pipes = [];
-                this.pipeTimer = 0;
-            }
-
-            onKeyDown(code) {
-                if (code === 'Space' || code === 'ArrowUp') { this.velocity = -300; playSound('shoot'); }
-            }
-
-            update(dt) {
-                this.velocity += 850 * dt;
-                this.birdY += this.velocity * dt;
-
-                this.pipeTimer += dt;
-                if (this.pipeTimer > 1.6) {
-                    this.pipeTimer = 0;
-                    this.pipes.push({ x: 800, gapY: 100 + Math.random() * 200, passed: false });
-                }
-
-                this.pipes.forEach(p => {
-                    p.x -= 180 * dt;
-                    if (!p.passed && p.x < 150) { p.passed = true; updateScore(10); playSound('score'); }
-                    if (p.x < 170 && p.x + 50 > 130) {
-                        if (this.birdY - 12 < p.gapY || this.birdY + 12 > p.gapY + 120) triggerGameOver();
-                    }
-                });
-
-                if (this.birdY > 435 || this.birdY < 0) triggerGameOver();
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = '#08090c';
-                ctx.fillRect(0, 0, 800, 450);
-
-                this.pipes.forEach(p => {
-                    ctx.fillStyle = '#00ff66';
-                    ctx.fillRect(p.x, 0, 50, p.gapY);
-                    ctx.fillRect(p.x, p.gapY + 120, 50, 450 - (p.gapY + 120));
-                });
-
-                ctx.fillStyle = '#00f0ff';
-                ctx.beginPath(); ctx.arc(150, this.birdY, 14, 0, Math.PI * 2); ctx.fill();
-            }
-        }
-
-        class StackerGame {
-            constructor() {
-                this.stack = [{ x: 300, width: 200, y: 400 }];
-                this.currentBlock = { x: 0, width: 200, speed: 250, dir: 1, y: 370 };
-            }
-
-            onKeyDown(code) {
-                if (code === 'Space' || code === 'ArrowUp') this.drop();
-            }
-
-            drop() {
-                const prev = this.stack[this.stack.length - 1];
-                const diff = this.currentBlock.x - prev.x;
-                if (Math.abs(diff) >= this.currentBlock.width) { triggerGameOver(); return; }
-
-                const newWidth = this.currentBlock.width - Math.abs(diff);
-                const newX = diff > 0 ? this.currentBlock.x : prev.x;
-
-                this.stack.push({ x: newX, width: newWidth, y: this.currentBlock.y });
-                updateScore(10); playSound('score');
-
-                this.currentBlock.width = newWidth;
-                this.currentBlock.x = 0;
-                this.currentBlock.speed += 15;
-                this.currentBlock.y -= 30;
-            }
-
-            update(dt) {
-                this.currentBlock.x += this.currentBlock.speed * this.currentBlock.dir * dt;
-                if (this.currentBlock.x <= 0 || this.currentBlock.x + this.currentBlock.width >= 800) {
-                    this.currentBlock.dir *= -1;
-                }
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = '#08090c';
-                ctx.fillRect(0, 0, 800, 450);
-
-                const offsetY = Math.max(0, (this.stack.length - 8) * 30);
-                ctx.save();
-                ctx.translate(0, offsetY);
-
-                this.stack.forEach((b, idx) => {
-                    ctx.fillStyle = idx % 2 === 0 ? '#00ff66' : '#00f0ff';
-                    ctx.fillRect(b.x, b.y, b.width, 28);
-                });
-
-                ctx.fillStyle = '#ff0055';
-                ctx.fillRect(this.currentBlock.x, this.currentBlock.y, this.currentBlock.width, 28);
-                ctx.restore();
-            }
-        }
-
-        class PongGame {
-            constructor() {
-                this.playerY = 180;
-                this.aiY = 180;
-                this.ball = { x: 400, y: 225, vx: 320, vy: 180, r: 8 };
-            }
-
-            update(dt) {
-                if (KEYS['ArrowUp']) this.playerY = Math.max(0, this.playerY - 350 * dt);
-                if (KEYS['ArrowDown']) this.playerY = Math.min(370, this.playerY + 350 * dt);
-
-                const aiCenter = this.aiY + 40;
-                if (aiCenter < this.ball.y - 15) this.aiY = Math.min(370, this.aiY + 260 * dt);
-                else if (aiCenter > this.ball.y + 15) this.aiY = Math.max(0, this.aiY - 260 * dt);
-
-                this.ball.x += this.ball.vx * dt;
-                this.ball.y += this.ball.vy * dt;
-
-                if (this.ball.y <= 0 || this.ball.y >= 450) { this.ball.vy *= -1; playSound('hit'); }
-
-                if (this.ball.x - this.ball.r <= 30 && this.ball.y >= this.playerY && this.ball.y <= this.playerY + 80) {
-                    this.ball.vx = Math.abs(this.ball.vx) * 1.05;
-                    updateScore(5); playSound('score');
-                }
-
-                if (this.ball.x + this.ball.r >= 770 && this.ball.y >= this.aiY && this.ball.y <= this.aiY + 80) {
-                    this.ball.vx = -Math.abs(this.ball.vx) * 1.05;
-                    playSound('hit');
-                }
-
-                if (this.ball.x < 0) triggerGameOver();
-                else if (this.ball.x > 800) {
-                    updateScore(50);
-                    this.ball = { x: 400, y: 225, vx: -320, vy: 180, r: 8 };
-                }
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = '#08090c';
-                ctx.fillRect(0, 0, 800, 450);
-
-                ctx.fillStyle = '#00f0ff';
-                ctx.fillRect(18, this.playerY, 12, 80);
-
-                ctx.fillStyle = '#ff0055';
-                ctx.fillRect(770, this.aiY, 12, 80);
-
-                ctx.fillStyle = '#00ff66';
-                ctx.beginPath(); ctx.arc(this.ball.x, this.ball.y, this.ball.r, 0, Math.PI * 2); ctx.fill();
-            }
-        }
-
-        /* Initializer */
-        window.onload = function() {
-            renderWaterGlasses();
-            initHealthCharts();
-        };
-    </script>
+        reader.readAsDataURL(file);
+      });
+
+      alert('Photo(s) uploaded successfully! Sent to owner for authorization.');
+      event.target.value = ''; // Reset input
+    }
+
+    // Modal controls
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.add('active');
+      document.getElementById('passcodeInput').focus();
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.remove('active');
+      document.getElementById('passcodeInput').value = '';
+    }
+
+    // Passcode Verification
+    function verifyCode() {
+      const input = document.getElementById('passcodeInput').value;
+      if (input === PASSCODE) {
+        isOwner = true;
+        document.getElementById('adminPanel').classList.add('active');
+        document.getElementById('ownerBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        closeLoginModal();
+        renderPhotos();
+      } else {
+        alert('Incorrect passcode! Please try again.');
+        document.getElementById('passcodeInput').value = '';
+      }
+    }
+
+    function logout() {
+      isOwner = false;
+      document.getElementById('adminPanel').classList.remove('active');
+      document.getElementById('ownerBtn').style.display = 'inline-block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      renderPhotos();
+    }
+
+    // Approve photo
+    function approvePhoto(id) {
+      let pendingPhotos = getPhotos(PENDING_KEY);
+      let publicPhotos = getPhotos(PUBLIC_KEY);
+
+      const photoToApprove = pendingPhotos.find(p => p.id === id);
+      if (photoToApprove) {
+        publicPhotos.push(photoToApprove);
+        pendingPhotos = pendingPhotos.filter(p => p.id !== id);
+
+        savePhotos(PUBLIC_KEY, publicPhotos);
+        savePhotos(PENDING_KEY, pendingPhotos);
+        renderPhotos();
+      }
+    }
+
+    // Reject / Delete photo
+    function deletePhoto(id, key) {
+      let photos = getPhotos(key);
+      photos = photos.filter(p => p.id !== id);
+      savePhotos(key, photos);
+      renderPhotos();
+    }
+
+    // LocalStorage Helpers
+    function getPhotos(key) {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function savePhotos(key, photos) {
+      try {
+        localStorage.setItem(key, JSON.stringify(photos));
+      } catch (e) {
+        alert('Storage quota exceeded! Try uploading smaller or fewer images.');
+      }
+    }
+
+    // Render photo grids
+    function renderPhotos() {
+      const pendingPhotos = getPhotos(PENDING_KEY);
+      const publicPhotos = getPhotos(PUBLIC_KEY);
+
+      // Render Admin/Pending Grid
+      const pendingGrid = document.getElementById('pendingGrid');
+      document.getElementById('pendingCount').textContent = `${pendingPhotos.length} Pending`;
+
+      if (pendingPhotos.length === 0) {
+        pendingGrid.innerHTML = `<div class="empty-msg">No photos waiting for approval.</div>`;
+      } else {
+        pendingGrid.innerHTML = pendingPhotos.map(photo => `
+          <div class="card">
+            <img src="${photo.src}" alt="${photo.name}" />
+            <div class="card-body">
+              <div class="card-title">${photo.name}</div>
+              <div class="card-actions">
+                <button class="btn btn-success" onclick="approvePhoto('${photo.id}')">Approve</button>
+                <button class="btn btn-danger" onclick="deletePhoto('${photo.id}', '${PENDING_KEY}')">Reject</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render Public Grid
+      const publicGrid = document.getElementById('publicGrid');
+      document.getElementById('publicCount').textContent = `${publicPhotos.length} Approved Photos`;
+
+      if (publicPhotos.length === 0) {
+        publicGrid.innerHTML = `<div class="empty-msg">No photos in the public gallery yet.</div>`;
+      } else {
+        publicGrid.innerHTML = publicPhotos.map(photo => `
+          <div class="card">
+            <img src="${photo.src}" alt="${photo.name}" />
+            <div class="card-body">
+              <div class="card-title">${photo.name}</div>
+              ${isOwner ? `
+                <div class="card-actions">
+                  <button class="btn btn-danger" onclick="deletePhoto('${photo.id}', '${PUBLIC_KEY}')">Delete</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+  </script>
 </body>
 </html>
